@@ -1,0 +1,45 @@
+version: '2.1'
+
+machine:
+  node:
+    version: 14.0.0
+
+orbs:
+  node: circleci/node@4.2.0
+
+jobs:
+  install-app:
+    executor: node/default
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: yarn install
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: m2-yarn-packages-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules/
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - m2-yarn-packages-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
+      # - run:
+      #     name: Check lint
+      #     command: yarn lint
+      - run:
+          name: Build app
+          command: yarn build
+      - add_ssh_keys:
+          fingerprints:
+            - "2c:15:1e:67:5b:cb:9e:85:42:24:5a:80:d8:90:6b:9d"
+      - run:
+          name: Deploy
+          command: scp -o StrictHostKeyChecking=no -r build package.json ubuntu@52.221.184.85:~/projects/fe
+      - run:
+          name: Install dependencies
+          command: ssh -t -o StrictHostKeyChecking=no ubuntu@52.221.184.85 "source ~/.nvm/nvm.sh && nvm -v && cd ~/projects/fe && yarn install"
+workflows:
+  deploy-app:
+    jobs:
+      - install-app
