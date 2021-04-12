@@ -9,7 +9,9 @@ orbs:
 
 jobs:
   install-app:
-    executor: node/default
+    executor:
+      name: node/default
+      tag: '14'
     steps:
       - checkout
       - run:
