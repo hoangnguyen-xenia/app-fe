@@ -1,19 +1,55 @@
 version: '2.1'
+
 orbs:
   node: circleci/node@4.2.1
+
 jobs:
-  test:
+  install-app:
+    docker:
+      - image: 'cimg/base:stable'
+        auth:
+          username: hoang0701
+          password: $DOCKERHUB_PASSWORD
     executor:
       name: node/default
       tag: '14'
+    parameters:
+      install-yarn:
+              default: true
+              description: Install Yarn?
+              type: boolean
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: yarn
       - run:
-          command: yarn run test
-          name: Run YARN tests
+          name: Install dependencies
+          command: yarn install
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: frontend-app-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules/
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - frontend-app-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
+      # - run:
+      #     name: Check lint
+      #     command: yarn lint
+      - run:
+          name: Build app
+          command: yarn build
+      - add_ssh_keys:
+          fingerprints:
+            - "2c:15:1e:67:5b:cb:9e:85:42:24:5a:80:d8:90:6b:9d"
+      - run:
+          name: Deploy
+          command: scp -o StrictHostKeyChecking=no -r build package.json ubuntu@52.221.184.85:~/projects/fe
+      - run:
+          name: Install dependencies
+          command: ssh -t -o StrictHostKeyChecking=no ubuntu@52.221.184.85 "source ~/.nvm/nvm.sh && nvm -v && cd ~/projects/&& ls"
 workflows:
-  test_my_app:
+  deploy-app:
     jobs:
-      - test
+      - install-app
