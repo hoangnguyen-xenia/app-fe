@@ -9,6 +9,8 @@ orbs:
 
 jobs:
   install-app:
+    docker:
+      - image: 'cimg/node:14'
     executor:
       name: node/default
       tag: '14'
