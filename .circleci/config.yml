@@ -5,7 +5,7 @@ machine:
     version: 14.0.0
 
 orbs:
-  node: circleci/node@4.2.0
+  node: circleci/node@4.2.1
 
 jobs:
   install-app:
