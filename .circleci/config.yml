@@ -1,16 +1,15 @@
 version: '2.1'
 
-machine:
-  node:
-    version: 14.0.0
-
 orbs:
   node: circleci/node@4.2.1
 
 jobs:
   install-app:
     docker:
-      - image: 'cimg/node:14'
+      - image: circleci/node:14.04
+        auth:
+          username: hoang0701
+          password: $DOCKERHUB_PASSWORD
     executor:
       name: node/default
       tag: '14'
