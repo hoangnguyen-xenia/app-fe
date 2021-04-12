@@ -6,18 +6,13 @@ orbs:
 jobs:
   install-app:
     docker:
-      - image: 'cimg/base:stable'
+      - image: 'cimg/node:14.16.1-browsers'
         auth:
           username: hoang0701
           password: $DOCKERHUB_PASSWORD
     executor:
       name: node/default
       tag: '14'
-    parameters:
-      install-yarn:
-              default: true
-              description: Install Yarn?
-              type: boolean
     steps:
       - checkout
       - node/install-packages:
